@@ -1,0 +1,12 @@
+﻿CREATE TABLE [dbo].[Orders]
+(
+	[Id] INT NOT NULL IDENTITY,
+	[OrderId] INT NOT NULL,
+	[ProductId] INT NOT NULL,
+	[ProductName] NVARCHAR(50) NOT NULL,
+	[ProductPrice] INT NOT NULL,
+	[ProductQuantity] INT NOT NULL,
+	[OrderDate] DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY ([Id])
+)
+GO
