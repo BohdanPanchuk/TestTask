@@ -11,80 +11,46 @@ namespace Consimple_TestProject.Controllers
     public class HomeController : Controller
     {
         Database database = new Database();
-        List<Order> ordersList = new List<Order>();
         
         public ActionResult Index()
         {
+            List<Order> ordersList = new List<Order>();
+
             ViewBag.ProductsInDB = database.GetAllProducts();
-            
-            if (ordersList.Count != 0)
-            {
-                ordersList = database.GetAllOrders();
-            }
+
+            int orderId = database.GetOrdersCount();
+            ordersList = database.GetOrderInfo(orderId);
 
             ViewBag.ProductsInCart = ordersList;
+            ViewBag.TotalOrderPrice = database.GetTotalOrderPrice();
+            ViewBag.OrderDate = database.GetOrderDate();
+            ViewBag.OrdersCount = database.GetAllOrdersCountForDate(DateTime.Now.Date.ToString("d"));
 
             return View();
         }
 
         [HttpPost]
-        public ActionResult AddProductInOrder(int productId, string productName, int productPrice, int productQuantity, bool nextOrder)
+        public ActionResult AddProductInOrder(List<Order> orders)
         {
             Order order = new Order();
 
-            if (ordersList.Count != 0)
+            int currentOrderId = database.GetOrdersCount();
+
+            currentOrderId++;
+
+            foreach (Order existingOrder in orders)
             {
-                ordersList = database.GetAllOrders();
+                order.OrderId = currentOrderId;
+                order.ProductId = existingOrder.ProductId;
+                order.ProductName = existingOrder.ProductName;
+                order.ProductPrice = existingOrder.ProductPrice;
+                order.ProductQuantity = existingOrder.ProductQuantity;
+                order.OrderDate = DateTime.Now.Date;
+
+                database.AddOrderInDatabase(order);
             }
-
-            order.Id = 1;
-            order.OrderId = 1;
-            order.ProductId = productId;
-            order.ProductName = productName;
-            order.ProductPrice = productPrice;
-            order.ProductQuantity = productQuantity;
-            order.OrderDate = DateTime.Now.Date;
-
-            if (ordersList.Count != 0)
-            {
-                foreach (Order existingOrder in ordersList)
-                {
-                    if (order.Id == existingOrder.Id)
-                    {
-                        order.Id++;
-                    }
-                }
-            }
-
-            if (nextOrder == true)
-            {
-                foreach (Order existingOrder in ordersList)
-                {
-                    if (order.OrderId == existingOrder.OrderId)
-                    {
-                        order.OrderId++;
-                    }
-                }
-            }
-
-            ordersList.Add(order);
-
-            database.AddOrderInDatabase(order);
-
-            ViewBag.ProductsInCart = ordersList;
 
             return RedirectToAction("Index");
         }
-
-        //[HttpPost]
-        //public ActionResult AddOrderInDatabase()
-        //{
-        //    foreach(Order order in ordersList)
-        //    {
-        //        database.AddOrderInDatabase(order);
-        //    }
-
-        //    return RedirectToAction("Index");
-        //}
     }
 }

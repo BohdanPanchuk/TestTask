@@ -4,102 +4,100 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="row">
-    <div class="col-md-3">
-        <div class="list-group">
-            <p class="control-label" align="left"><strong>Products list:</strong></p>
+<div class="list-group">
+    <p class="control-label" align="center"><strong>Products list:</strong></p>
 
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th class="text-center">Id</th>
-                        <th class="text-center">Name</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var product in ViewBag.ProductsInDB)
-                    {
-                        <tr>
-                            <td class="text-center">@product.Id</td>
-                            <td class="text-center">@product.Name</td>
-                            <td><button type="submit" class="btn btn-primary" onclick="AddProductInOrder(@product.Id, '@product.Name')">Add in cart</button></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th class="text-center">Id</th>
+                <th class="text-center">Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in ViewBag.ProductsInDB)
+            {
+                <tr>
+                    <td class="text-center">@product.Id</td>
+                    <td class="text-center">@product.Name</td>
+                    <td><button type="submit" class="btn btn-primary" onclick="AddProductInOrder(@product.Id, '@product.Name')">Add in cart</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-primary" onclick="AddProductsInOrder()">Buy</button>
+    
+    <button type="button" class="btn btn-primary" onclick="alert(ordersCount)">Show order count on current date</button>
+</div>
 
-    <div class="col-md-1"></div>
+<div>
+    <p>Orders count on current date: @ViewBag.OrdersCount</p>
+</div>
 
-    <!--<div class="col-md-8" style="visibility:hidden" id="Hidden" name="Hidden">-->
-    <div class="col-md-8">
-        <div class="list-group">
-            <p class="control-label" align="center"><strong>Products in order:</strong></p>
+<div class="list-group">
+    <p class="control-label" align="center"><strong>Products in last order:</strong></p>
 
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th class="text-center">Id</th>
-                        <th class="text-center">Name</th>
-                        <th class="text-center">Price</th>
-                        <th class="text-center">Quantity</th>
-                    </tr>
-                </thead>
-                <tbody>
-                        @foreach (var order in ViewBag.ProductsInCart)
-                        {
-                            int i = 1;
-                        <tr>                            
-                            <td class="text-center">@i++</td>
-                            <td class="text-center">@order.ProductName</td>
-                            <td class="text-center">@order.ProductPrice</td>
-                            <td class="text-center">@order.ProductQuantity</td>
-                        </tr>
-                        }
-                </tbody>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th class="text-center">Order Id</th>
+                <th class="text-center">Product Name</th>
+                <th class="text-center">Product Price</th>
+                <th class="text-center">Product Quantity</th>
+                <th class="text-center">Order Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in ViewBag.ProductsInCart)
+            {
+                <tr>
+                    <td class="text-center">@order.OrderId</td>
+                    <td class="text-center">@order.ProductName</td>
+                    <td class="text-center">@order.ProductPrice</td>
+                    <td class="text-center">@order.ProductQuantity</td>
+                </tr>
+            }
 
-                
-            </table>
-            <button type="button" class="btn btn-primary" onclick="nextOrder=true">Buy</button>
-        </div>
-    </div>
+            <tr>
+                <td colspan="2" class="text-right">Total price:</td>
+                <td class="text-center">@ViewBag.TotalOrderPrice</td>
+                <td></td>
+                <td class="text-center">@ViewBag.OrderDate</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
 <script type="text/javascript">
-    //function ShowHidden() {
-    //    $("Hidden").prop("style", "visibility:visible");
-    //}
+    var productsInOrder = [];
     
-    var nextOrder = false;
-    
-    function AddProductInOrder(id, name) {
-        //alert(id);
-        //alert(name);
+    var ordersCount = @ViewBag.OrdersCount;
 
-        //$("Hidden").prop("style", "visibility:visible");
+    function AddProductInOrder(id, name) {
+        var order = new Object();
 
         var price = prompt("Input product price", "1");
-
         var quantity = prompt("Input product quantity", "1");
-
         
-        //$("#Id").val(id);
-        //$("#Name").val(name);
-        //$("#Price").val(price);
-        //$("#Quantity").val(quantity);
+        order["ProductId"] = id;
+        order["ProductName"] = name;
+        order["ProductPrice"] = price;
+        order["ProductQuantity"] = quantity;
+
+        productsInOrder.push(order);
+
+        alert("Product add in cart.");
+    }
+    
+    function AddProductsInOrder(){
+        var json = JSON.stringify(productsInOrder);
 
         $.ajax({
             cache: false,
             type: "POST",
             url: "/Home/AddProductInOrder/",
-            data: {
-                productId: id,
-                productName: name,
-                productPrice: price,
-                productQuantity: quantity,
-                nextOrder : nextOrder
-            },
+            data: json,
+            contentType: 'application/json; charset=utf-8',
             success: function ()
             {
                 window.location = "/";
